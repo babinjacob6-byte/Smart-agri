@@ -5,27 +5,27 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Any, Union
 import uuid
 from datetime import datetime, timezone
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+mongo_url: str = os.environ['MONGO_URL']
+client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # In-memory simulation state (temporary, resets on restart)
-simulation_active = False
+simulation_active: bool = False
 
 # --- Pydantic Models ---
 class SensorReading(BaseModel):
-    value: object
+    value: Union[float, str]
     unit: str
     status: str
     safe: str
@@ -52,24 +52,24 @@ class DashboardResponse(BaseModel):
     risk_level: str
     confidence: int
     primary_driver: str
-    sensors: dict
+    sensors: dict[str, Any]
 
 class InsightsResponse(BaseModel):
     advisory: str
     primary_driver: str
-    driver_contributions: dict
+    driver_contributions: dict[str, int]
     crop: str
-    crop_options: list
-    safe_ranges: dict
+    crop_options: List[str]
+    safe_ranges: dict[str, str]
     storage_window: str
-    recommended_actions: list
+    recommended_actions: List[str]
 
 class TrendsResponse(BaseModel):
-    history: list
+    history: List[HistoryPoint]
 
 class AlertsResponse(BaseModel):
-    alerts: list
-    active_warning: Optional[dict] = None
+    alerts: List[AlertItem]
+    active_warning: Optional[dict[str, str]] = None
 
 # --- Seed Data ---
 SEED_MONITORING = {
@@ -143,7 +143,7 @@ SIMULATED_OVERRIDES = {
 
 # --- Startup: Seed DB ---
 @app.on_event("startup")
-async def seed_database():
+async def seed_database() -> None:
     count = await db.monitoring.count_documents({})
     if count == 0:
         await db.monitoring.insert_one({**SEED_MONITORING})
@@ -162,12 +162,12 @@ async def seed_database():
 
 # --- API Endpoints ---
 @api_router.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "AgroSense AI API"}
 
 
-@api_router.get("/dashboard")
-async def get_dashboard():
+@api_router.get("/dashboard", response_model=DashboardResponse)
+async def get_dashboard() -> dict[str, Any]:
     global simulation_active
     doc = await db.monitoring.find_one({"id": "monitor-001"}, {"_id": 0})
     if not doc:
@@ -193,8 +193,8 @@ async def get_dashboard():
     }
 
 
-@api_router.get("/insights")
-async def get_insights():
+@api_router.get("/insights", response_model=InsightsResponse)
+async def get_insights() -> dict[str, Any]:
     global simulation_active
     doc = await db.monitoring.find_one({"id": "monitor-001"}, {"_id": 0})
     if not doc:
@@ -219,14 +219,14 @@ async def get_insights():
     }
 
 
-@api_router.get("/trends")
-async def get_trends():
+@api_router.get("/trends", response_model=TrendsResponse)
+async def get_trends() -> dict[str, list]:
     history = await db.history.find({}, {"_id": 0}).sort("time", 1).to_list(100)
     return {"history": history}
 
 
-@api_router.get("/alerts")
-async def get_alerts(filter: Optional[str] = Query(default="all")):
+@api_router.get("/alerts", response_model=AlertsResponse)
+async def get_alerts(filter: Optional[str] = Query(default="all")) -> dict[str, Any]:
     global simulation_active
     
     query = {}
@@ -250,7 +250,7 @@ async def get_alerts(filter: Optional[str] = Query(default="all")):
 
 
 @api_router.post("/simulate-alert")
-async def simulate_alert():
+async def simulate_alert() -> dict[str, Any]:
     global simulation_active
     simulation_active = True
     
@@ -268,7 +268,7 @@ async def simulate_alert():
 
 
 @api_router.post("/reset-simulation")
-async def reset_simulation():
+async def reset_simulation() -> dict[str, str]:
     global simulation_active
     simulation_active = False
     # Remove simulated alerts
@@ -294,5 +294,5 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_db_client() -> None:
     client.close()

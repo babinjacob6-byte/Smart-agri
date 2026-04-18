@@ -18,18 +18,16 @@ const statusColors = {
 export default function SensorCard({ name, value, unit, status, safeRange }) {
   const colors = statusColors[status] || statusColors.safe;
   const Icon = sensorIcons[name] || Gauge;
-  const isPulsing = status === "warning" || status === "danger";
+  const getPulseClass = () => {
+    if (status === "danger") return "animate-danger-pulse";
+    if (status === "warning") return "animate-warning-pulse";
+    return "";
+  };
 
   return (
     <div
       data-testid={`sensor-card-${name.toLowerCase().replace(/[₃\s]/g, "")}`}
-      className={`relative rounded-lg border border-[#1A7A3C]/10 ${colors.bg} border-l-4 ${colors.border} p-4 transition-all duration-200 hover:-translate-y-[1px] ${
-        isPulsing
-          ? status === "danger"
-            ? "animate-danger-pulse"
-            : "animate-warning-pulse"
-          : ""
-      }`}
+      className={`relative rounded-lg border border-[#1A7A3C]/10 ${colors.bg} border-l-4 ${colors.border} p-4 transition-all duration-200 hover:-translate-y-[1px] ${getPulseClass()}`}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">

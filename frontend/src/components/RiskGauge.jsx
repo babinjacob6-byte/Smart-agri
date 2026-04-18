@@ -1,79 +1,73 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+
+const ANIMATION_DURATION_MS = 1500;
+const GAUGE_SIZE = 240;
+const GAUGE_STROKE_WIDTH = 14;
+const RISK_AMBER_THRESHOLD = 40;
+const RISK_RED_THRESHOLD = 70;
+
+const GAUGE_RADIUS = (GAUGE_SIZE - GAUGE_STROKE_WIDTH) / 2;
+const GAUGE_CIRCUMFERENCE = Math.PI * GAUGE_RADIUS;
+const GAUGE_HALF_STROKE = GAUGE_STROKE_WIDTH / 2;
+const ARC_PATH = `M ${GAUGE_HALF_STROKE} ${GAUGE_SIZE / 2} A ${GAUGE_RADIUS} ${GAUGE_RADIUS} 0 0 1 ${GAUGE_SIZE - GAUGE_HALF_STROKE} ${GAUGE_SIZE / 2}`;
+const GAUGE_VIEWBOX_HEIGHT = GAUGE_SIZE / 2 + 20;
+
+function getRiskColor(val) {
+  if (val < RISK_AMBER_THRESHOLD) return "#22C55E";
+  if (val < RISK_RED_THRESHOLD) return "#F59E0B";
+  return "#EF4444";
+}
 
 export default function RiskGauge({ score }) {
   const [animatedScore, setAnimatedScore] = useState(0);
   const animRef = useRef(null);
 
-  useEffect(() => {
-    // Animate from 0 to score
-    const duration = 1500;
-    const startTime = performance.now();
-    const startScore = 0;
+  const cancelAnimation = useCallback(() => {
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+  }, []);
 
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
+  useEffect(() => {
+    const startTime = performance.now();
+
+    const tick = (currentTime) => {
+      const progress = Math.min((currentTime - startTime) / ANIMATION_DURATION_MS, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setAnimatedScore(Math.round(startScore + (score - startScore) * eased));
+      setAnimatedScore(Math.round(score * eased));
 
       if (progress < 1) {
-        animRef.current = requestAnimationFrame(animate);
+        animRef.current = requestAnimationFrame(tick);
       }
     };
 
-    animRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, [score]);
+    animRef.current = requestAnimationFrame(tick);
+    return cancelAnimation;
+  }, [score, cancelAnimation]);
 
-  // SVG semicircle parameters
-  const size = 240;
-  const strokeWidth = 14;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = Math.PI * radius; // semicircle
-  const offset = circumference - (animatedScore / 100) * circumference;
-
-  const getColor = (val) => {
-    if (val < 40) return "#22C55E";
-    if (val < 70) return "#F59E0B";
-    return "#EF4444";
-  };
-
-  const color = getColor(animatedScore);
+  const offset = GAUGE_CIRCUMFERENCE - (animatedScore / 100) * GAUGE_CIRCUMFERENCE;
+  const color = getRiskColor(animatedScore);
 
   return (
     <div className="relative flex items-center justify-center" data-testid="risk-gauge">
       <svg
-        width={size}
-        height={size / 2 + 20}
-        viewBox={`0 0 ${size} ${size / 2 + 20}`}
+        width={GAUGE_SIZE}
+        height={GAUGE_VIEWBOX_HEIGHT}
+        viewBox={`0 0 ${GAUGE_SIZE} ${GAUGE_VIEWBOX_HEIGHT}`}
         className="overflow-visible"
       >
-        {/* Background arc */}
+        <path d={ARC_PATH} fill="none" stroke="#E5E7EB" strokeWidth={GAUGE_STROKE_WIDTH} strokeLinecap="round" />
         <path
-          d={`M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`}
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-        />
-        {/* Colored arc */}
-        <path
-          d={`M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`}
+          d={ARC_PATH}
           fill="none"
           stroke={color}
-          strokeWidth={strokeWidth}
+          strokeWidth={GAUGE_STROKE_WIDTH}
           strokeLinecap="round"
-          strokeDasharray={circumference}
+          strokeDasharray={GAUGE_CIRCUMFERENCE}
           strokeDashoffset={offset}
           style={{ transition: "stroke 0.5s ease" }}
         />
-        {/* Score text */}
         <text
-          x={size / 2}
-          y={size / 2 - 10}
+          x={GAUGE_SIZE / 2}
+          y={GAUGE_SIZE / 2 - 10}
           textAnchor="middle"
           className="font-['Cabinet_Grotesk',sans-serif]"
           fill={color}
@@ -82,11 +76,10 @@ export default function RiskGauge({ score }) {
         >
           {animatedScore}
         </text>
-        {/* Scale labels */}
-        <text x={strokeWidth / 2 + 4} y={size / 2 + 18} fontSize="11" fill="#9CA3AF" textAnchor="start">
+        <text x={GAUGE_HALF_STROKE + 4} y={GAUGE_SIZE / 2 + 18} fontSize="11" fill="#9CA3AF" textAnchor="start">
           0
         </text>
-        <text x={size - strokeWidth / 2 - 4} y={size / 2 + 18} fontSize="11" fill="#9CA3AF" textAnchor="end">
+        <text x={GAUGE_SIZE - GAUGE_HALF_STROKE - 4} y={GAUGE_SIZE / 2 + 18} fontSize="11" fill="#9CA3AF" textAnchor="end">
           100
         </text>
       </svg>

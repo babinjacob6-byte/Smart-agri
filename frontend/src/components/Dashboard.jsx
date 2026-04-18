@@ -13,28 +13,27 @@ const sensorLabels = {
   motion: "Motion",
 };
 
+const RISK_AMBER_THRESHOLD = 40;
+const RISK_RED_THRESHOLD = 70;
+
+const LEVEL_COLORS = {
+  WARNING: "bg-[#FEF3C7] text-[#92400E] border-[#F59E0B]/30",
+  ALERT: "bg-[#FEE2E2] text-[#991B1B] border-[#EF4444]/30",
+  DEFAULT: "bg-[#DCFCE7] text-[#166534] border-[#22C55E]/30",
+};
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]" data-testid="dashboard-loading">
+      <div className="w-8 h-8 border-2 border-[#1A7A3C] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
 export default function Dashboard({ data, loading }) {
-  if (loading || !data) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]" data-testid="dashboard-loading">
-        <div className="w-8 h-8 border-2 border-[#1A7A3C] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading || !data) return <LoadingSpinner />;
 
-  const riskColor =
-    data.risk_score < 40
-      ? "#22C55E"
-      : data.risk_score < 70
-      ? "#F59E0B"
-      : "#EF4444";
-
-  const levelColor =
-    data.risk_level === "WARNING"
-      ? "bg-[#FEF3C7] text-[#92400E] border-[#F59E0B]/30"
-      : data.risk_level === "ALERT"
-      ? "bg-[#FEE2E2] text-[#991B1B] border-[#EF4444]/30"
-      : "bg-[#DCFCE7] text-[#166534] border-[#22C55E]/30";
+  const levelColor = LEVEL_COLORS[data.risk_level] || LEVEL_COLORS.DEFAULT;
 
   return (
     <div className="space-y-8" data-testid="dashboard-page">
