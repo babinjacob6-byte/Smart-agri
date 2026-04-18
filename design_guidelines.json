@@ -1,0 +1,126 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 1 (Organic & Earthy) - Enterprise Agriculture Dashboard",
+  "typography": {
+    "fonts": {
+      "heading": "Cabinet Grotesk",
+      "body": "Inter",
+      "mono": "JetBrains Mono"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl tracking-tight font-black text-[#111827]",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-bold text-[#111827]",
+      "h3": "text-xl sm:text-2xl font-semibold text-[#111827]",
+      "h4": "text-lg sm:text-xl font-medium text-[#111827]",
+      "body": "text-base leading-relaxed text-[#111827]",
+      "small": "text-sm text-[#111827]/70",
+      "label": "text-xs uppercase tracking-[0.2em] font-bold text-[#111827]/60"
+    },
+    "rules": [
+      "No 'Inter' or generic sans for headings. Use 'Cabinet Grotesk' to provide architectural structure and enterprise authority.",
+      "Never center-align dense data, metrics, or paragraphs. Left-align for scannability and readability.",
+      "Use tight line-height (leading-none or leading-tight) for headings, loose (leading-relaxed) for body."
+    ]
+  },
+  "colors": {
+    "primary": {
+      "DEFAULT": "#1A7A3C",
+      "hover": "#145C2D",
+      "light": "#22A04E"
+    },
+    "background": {
+      "DEFAULT": "#FFFFFF",
+      "surface": "#F0FDF4",
+      "surface_hover": "#E6FBF0",
+      "glass": "bg-white/70 backdrop-blur-xl border-b border-[#1A7A3C]/10"
+    },
+    "text": {
+      "DEFAULT": "#111827",
+      "muted": "#4B5563",
+      "inverse": "#FFFFFF"
+    },
+    "status": {
+      "warning": "#F59E0B",
+      "danger": "#EF4444",
+      "watch": "#F97316",
+      "info": "#0284C7"
+    },
+    "rules": [
+      "NO GRADIENTS whatsoever. Rely on flat, solid surfaces to communicate 'data-forward' truth.",
+      "NO PURPLE. Under any circumstances.",
+      "Primary color (#1A7A3C) is strictly reserved for CTAs, active states, and key data points. Limit global usage to preserve impact.",
+      "Hover states must be explicitly defined and guarantee higher contrast."
+    ]
+  },
+  "layout": {
+    "spacing": "Generous Spacing Philosophy. Use p-6 or p-8 inside cards. Use gap-6 or gap-8 between grid items.",
+    "grid": {
+      "mode": "MODE B: THE CONTROL ROOM GRID",
+      "desktop": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4. Every pixel utilized. h-full on children.",
+      "mobile": "grid-cols-1 or 2 (for dense sensor metrics)."
+    },
+    "radius": "rounded-lg (8px maximum) across the entire system. Sharp, enterprise, technical.",
+    "navigation": {
+      "desktop": "Left sidebar (w-64), sticky/fixed, pure white bg, right border 1px solid #1A7A3C/10.",
+      "mobile": "Bottom navigation bar, fixed bottom-0, z-50, crystal glass effect (bg-white/80 backdrop-blur-md) with border-t."
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "Flat solid surfaces. Background: #F0FDF4. Border: 1px solid #1A7A3C/10. No heavy shadows, use shadow-sm at absolute maximum.",
+      "rule": "Avoid the generic Shadcn 'card' look. Use dense, cardless-feeling rectangles."
+    },
+    "risk_gauge": {
+      "style": "SVG Semicircular gauge. Stroke width 12px. Color-coded (Green/Yellow/Red). Large bold metric centered inside.",
+      "animation": "Stroke-dashoffset animation on mount."
+    },
+    "sensor_grid": {
+      "style": "2x3 grid (mobile) / 3x2 grid (desktop). Phosphor icons. Focus entirely on the metric value and trend arrow (up/down)."
+    },
+    "ai_advisory_card": {
+      "style": "Distinctive layout. Use a 1px solid #1A7A3C border or a slightly darker surface (#E6FBF0). No 'AI sparkles' or neon glows. Keep it objective.",
+      "typography": "Use a subtle monospace tag for 'AI Generated'."
+    },
+    "charts": {
+      "library": "Recharts or Shadcn Charts",
+      "style": "Minimal grid lines. No bounding box. Customize tooltips to match #111827 background with white text."
+    },
+    "tabs": {
+      "style": "Clean underline tabs or sharp pill toggles. Override Shadcn's fixed heights (h-9 to h-auto)."
+    },
+    "alerts": {
+      "list": "Chronological. Use a distinct 4px left-border color for severity (Red/Yellow/Orange).",
+      "banner": "Sticky bottom banner for active warnings. Needs high contrast."
+    },
+    "fab": {
+      "style": "Simulate Alert Button. Fixed bottom-right (above nav on mobile). Primary color background. Drop-shadow."
+    }
+  },
+  "motion": {
+    "interactions": "Micro-interactions. Hover states: slight lift (-translate-y-[1px]) or subtle border darken.",
+    "animations": "Pulsing animation (animate-pulse) ONLY for active warning/danger cards. Smooth tab transitions using framer-motion layoutId.",
+    "accessibility": "Respect prefers-reduced-motion."
+  },
+  "media": {
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "style": "Regular weight for body, Duotone for active navigation."
+    },
+    "image_urls": {
+      "profile_avatar": {
+        "url": "https://images.unsplash.com/photo-1627829382469-f4bce7df99ba?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBmYXJtZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzY1MTIwMDd8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional portrait for the user profile avatar in the sidebar/header."
+      },
+      "empty_state_bg": {
+        "url": "https://images.unsplash.com/photo-1559603216-2fdfb3f60423?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxncmFpbiUyMHNpbG8lMjBpbnRlcmlvcnxlbnwwfHx8fDE3NzY1MTIwMDd8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Grain silo interior. To be used as a heavily faded background texture (opacity-5) for empty states or the Insights section header."
+      }
+    }
+  },
+  "testing": {
+    "rules": [
+      "All interactive elements (buttons, links, form inputs, tabs, FAB) MUST include a data-testid attribute.",
+      "Format: kebab-case, role-based. e.g., data-testid='simulate-alert-fab'"
+    ]
+  }
+}
