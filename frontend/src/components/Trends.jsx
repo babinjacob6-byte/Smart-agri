@@ -103,6 +103,8 @@ export default function Trends({ data, loading }) {
 
   const history = data?.history || [];
 
+  // `metrics` is a module-level constant — never changes between renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const stats = useMemo(() => metrics.map((m) => {
     const values = history.map((h) => h[m.key]).filter((v) => v !== undefined);
     return {

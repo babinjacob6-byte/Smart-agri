@@ -61,6 +61,52 @@ function PrimaryDriverCard({ primaryDriver, contributions }) {
   );
 }
 
+function CropSelector({ crop, cropOptions }) {
+  return (
+    <div className="mb-4">
+      <label className="text-xs font-semibold text-[#4B5563] uppercase tracking-wider block mb-2">
+        Current Crop
+      </label>
+      <Select defaultValue={crop} data-testid="crop-select">
+        <SelectTrigger
+          className="w-full sm:w-64 bg-white border-[#1A7A3C]/20 text-[#111827]"
+          data-testid="crop-select-trigger"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent data-testid="crop-select-content">
+          {cropOptions.map((c) => (
+            <SelectItem key={c} value={c} data-testid={`crop-option-${c.toLowerCase()}`}>
+              {c}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function SafeRangesTable({ safeRanges }) {
+  return (
+    <div className="space-y-2">
+      <h4 className="text-xs font-semibold text-[#4B5563] uppercase tracking-wider mb-2">
+        Safe Ranges
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {Object.entries(safeRanges).map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-center justify-between py-2 px-3 rounded bg-white border border-[#1A7A3C]/10"
+          >
+            <span className="text-sm text-[#4B5563]">{key}</span>
+            <span className="text-sm font-medium text-[#111827]">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CropProfileCard({ crop, cropOptions, safeRanges }) {
   return (
     <div
@@ -73,42 +119,8 @@ function CropProfileCard({ crop, cropOptions, safeRanges }) {
           Crop Profile
         </h3>
       </div>
-      <div className="mb-4">
-        <label className="text-xs font-semibold text-[#4B5563] uppercase tracking-wider block mb-2">
-          Current Crop
-        </label>
-        <Select defaultValue={crop} data-testid="crop-select">
-          <SelectTrigger
-            className="w-full sm:w-64 bg-white border-[#1A7A3C]/20 text-[#111827]"
-            data-testid="crop-select-trigger"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent data-testid="crop-select-content">
-            {cropOptions.map((c) => (
-              <SelectItem key={c} value={c} data-testid={`crop-option-${c.toLowerCase()}`}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <h4 className="text-xs font-semibold text-[#4B5563] uppercase tracking-wider mb-2">
-          Safe Ranges
-        </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {Object.entries(safeRanges).map(([key, value]) => (
-            <div
-              key={key}
-              className="flex items-center justify-between py-2 px-3 rounded bg-white border border-[#1A7A3C]/10"
-            >
-              <span className="text-sm text-[#4B5563]">{key}</span>
-              <span className="text-sm font-medium text-[#111827]">{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <CropSelector crop={crop} cropOptions={cropOptions} />
+      <SafeRangesTable safeRanges={safeRanges} />
     </div>
   );
 }

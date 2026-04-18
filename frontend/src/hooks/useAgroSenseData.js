@@ -9,6 +9,23 @@ async function fetchJSON(url, options) {
   return res.json();
 }
 
+/**
+ * Creates a memoised fetcher that GETs `path`, stores result via `setter`,
+ * and pipes errors into a shared `setError`.
+ */
+function useFetcher(path, setter, setError) {
+  // `path`, `setter`, `setError` are stable (string literal / setState fn).
+  // `API` and `fetchJSON` are module-level constants.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback(async (query = "") => {
+    try {
+      setter(await fetchJSON(`${API}${path}${query}`));
+    } catch (err) {
+      setError((prev) => prev || err.message);
+    }
+  }, [path, setter, setError]);
+}
+
 export default function useAgroSenseData() {
   const [dashboardData, setDashboardData] = useState(null);
   const [insightsData, setInsightsData] = useState(null);
@@ -18,29 +35,9 @@ export default function useAgroSenseData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchDashboard = useCallback(async () => {
-    try {
-      setDashboardData(await fetchJSON(`${API}/dashboard`));
-    } catch (err) {
-      setError((prev) => prev || err.message);
-    }
-  }, []);
-
-  const fetchInsights = useCallback(async () => {
-    try {
-      setInsightsData(await fetchJSON(`${API}/insights`));
-    } catch (err) {
-      setError((prev) => prev || err.message);
-    }
-  }, []);
-
-  const fetchTrends = useCallback(async () => {
-    try {
-      setTrendsData(await fetchJSON(`${API}/trends`));
-    } catch (err) {
-      setError((prev) => prev || err.message);
-    }
-  }, []);
+  const fetchDashboard = useFetcher("/dashboard", setDashboardData, setError);
+  const fetchInsights  = useFetcher("/insights",  setInsightsData,  setError);
+  const fetchTrends    = useFetcher("/trends",    setTrendsData,    setError);
 
   const fetchAlerts = useCallback(async (filter = "all") => {
     try {
@@ -48,6 +45,8 @@ export default function useAgroSenseData() {
     } catch (err) {
       setError((prev) => prev || err.message);
     }
+    // API and fetchJSON are module-level constants — stable across renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAll = useCallback(async () => {
@@ -65,6 +64,8 @@ export default function useAgroSenseData() {
     } catch (err) {
       setError(err.message);
     }
+    // API and fetchJSON are module-level constants.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchDashboard, fetchInsights, fetchAlerts]);
 
   const handleReset = useCallback(async () => {
@@ -75,6 +76,8 @@ export default function useAgroSenseData() {
     } catch (err) {
       setError(err.message);
     }
+    // API and fetchJSON are module-level constants.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchDashboard, fetchInsights, fetchAlerts]);
 
   return {

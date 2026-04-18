@@ -23,6 +23,8 @@ function useAnimatedValue(target) {
   const [value, setValue] = useState(0);
   const frameRef = useRef(null);
 
+  // frameRef is a ref (stable identity), cancelAnimationFrame is a global.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const cancel = useCallback(() => {
     if (frameRef.current != null) {
       cancelAnimationFrame(frameRef.current);
@@ -30,6 +32,8 @@ function useAnimatedValue(target) {
     }
   }, []);
 
+  // ANIMATION_DURATION_MS is a module-level constant; frameRef is a stable ref.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const start = performance.now();
 
