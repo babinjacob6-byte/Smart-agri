@@ -3,6 +3,12 @@ import { useState, useCallback } from "react";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+async function fetchJSON(url, options) {
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
 export default function useAgroSenseData() {
   const [dashboardData, setDashboardData] = useState(null);
   const [insightsData, setInsightsData] = useState(null);
@@ -10,55 +16,65 @@ export default function useAgroSenseData() {
   const [alertsData, setAlertsData] = useState(null);
   const [isSimulated, setIsSimulated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchDashboard = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/dashboard`);
-      setDashboardData(await res.json());
-    } catch (_) { /* network error – silently ignored */ }
+      setDashboardData(await fetchJSON(`${API}/dashboard`));
+    } catch (err) {
+      setError((prev) => prev || err.message);
+    }
   }, []);
 
   const fetchInsights = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/insights`);
-      setInsightsData(await res.json());
-    } catch (_) { /* network error */ }
+      setInsightsData(await fetchJSON(`${API}/insights`));
+    } catch (err) {
+      setError((prev) => prev || err.message);
+    }
   }, []);
 
   const fetchTrends = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/trends`);
-      setTrendsData(await res.json());
-    } catch (_) { /* network error */ }
+      setTrendsData(await fetchJSON(`${API}/trends`));
+    } catch (err) {
+      setError((prev) => prev || err.message);
+    }
   }, []);
 
   const fetchAlerts = useCallback(async (filter = "all") => {
     try {
-      const res = await fetch(`${API}/alerts?filter=${filter}`);
-      setAlertsData(await res.json());
-    } catch (_) { /* network error */ }
+      setAlertsData(await fetchJSON(`${API}/alerts?filter=${filter}`));
+    } catch (err) {
+      setError((prev) => prev || err.message);
+    }
   }, []);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    setError(null);
     await Promise.all([fetchDashboard(), fetchInsights(), fetchTrends(), fetchAlerts()]);
     setLoading(false);
   }, [fetchDashboard, fetchInsights, fetchTrends, fetchAlerts]);
 
   const handleSimulate = useCallback(async () => {
     try {
-      await fetch(`${API}/simulate-alert`, { method: "POST" });
+      await fetchJSON(`${API}/simulate-alert`, { method: "POST" });
       setIsSimulated(true);
       await Promise.all([fetchDashboard(), fetchInsights(), fetchAlerts()]);
-    } catch (_) { /* network error */ }
+    } catch (err) {
+      setError(err.message);
+    }
   }, [fetchDashboard, fetchInsights, fetchAlerts]);
 
   const handleReset = useCallback(async () => {
     try {
-      await fetch(`${API}/reset-simulation`, { method: "POST" });
+      await fetchJSON(`${API}/reset-simulation`, { method: "POST" });
       setIsSimulated(false);
       await Promise.all([fetchDashboard(), fetchInsights(), fetchAlerts()]);
-    } catch (_) { /* network error */ }
+    } catch (err) {
+      setError(err.message);
+    }
   }, [fetchDashboard, fetchInsights, fetchAlerts]);
 
   return {
@@ -68,6 +84,7 @@ export default function useAgroSenseData() {
     alertsData,
     isSimulated,
     loading,
+    error,
     fetchAll,
     fetchAlerts,
     handleSimulate,

@@ -18,31 +18,54 @@ function getRiskColor(val) {
   return "#EF4444";
 }
 
-export default function RiskGauge({ score }) {
-  const [animatedScore, setAnimatedScore] = useState(0);
-  const animRef = useRef(null);
+/** Animates from 0 to `target` over ANIMATION_DURATION_MS with ease-out cubic. */
+function useAnimatedValue(target) {
+  const [value, setValue] = useState(0);
+  const frameRef = useRef(null);
 
-  const cancelAnimation = useCallback(() => {
-    if (animRef.current) cancelAnimationFrame(animRef.current);
+  const cancel = useCallback(() => {
+    if (frameRef.current != null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
-    const startTime = performance.now();
+    const start = performance.now();
 
-    const tick = (currentTime) => {
-      const progress = Math.min((currentTime - startTime) / ANIMATION_DURATION_MS, 1);
+    const tick = (now) => {
+      const progress = Math.min((now - start) / ANIMATION_DURATION_MS, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setAnimatedScore(Math.round(score * eased));
-
+      setValue(Math.round(target * eased));
       if (progress < 1) {
-        animRef.current = requestAnimationFrame(tick);
+        frameRef.current = requestAnimationFrame(tick);
       }
     };
 
-    animRef.current = requestAnimationFrame(tick);
-    return cancelAnimation;
-  }, [score, cancelAnimation]);
+    frameRef.current = requestAnimationFrame(tick);
+    return cancel;
+  }, [target, cancel]);
 
+  return value;
+}
+
+function GaugeArc({ color, offset }) {
+  return (
+    <path
+      d={ARC_PATH}
+      fill="none"
+      stroke={color}
+      strokeWidth={GAUGE_STROKE_WIDTH}
+      strokeLinecap="round"
+      strokeDasharray={GAUGE_CIRCUMFERENCE}
+      strokeDashoffset={offset}
+      style={{ transition: "stroke 0.5s ease" }}
+    />
+  );
+}
+
+export default function RiskGauge({ score }) {
+  const animatedScore = useAnimatedValue(score);
   const offset = GAUGE_CIRCUMFERENCE - (animatedScore / 100) * GAUGE_CIRCUMFERENCE;
   const color = getRiskColor(animatedScore);
 
@@ -55,16 +78,7 @@ export default function RiskGauge({ score }) {
         className="overflow-visible"
       >
         <path d={ARC_PATH} fill="none" stroke="#E5E7EB" strokeWidth={GAUGE_STROKE_WIDTH} strokeLinecap="round" />
-        <path
-          d={ARC_PATH}
-          fill="none"
-          stroke={color}
-          strokeWidth={GAUGE_STROKE_WIDTH}
-          strokeLinecap="round"
-          strokeDasharray={GAUGE_CIRCUMFERENCE}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke 0.5s ease" }}
-        />
+        <GaugeArc color={color} offset={offset} />
         <text
           x={GAUGE_SIZE / 2}
           y={GAUGE_SIZE / 2 - 10}
